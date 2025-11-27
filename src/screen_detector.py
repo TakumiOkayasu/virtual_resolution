@@ -20,28 +20,23 @@ class ScreenInfo:
 def detect_screen_info() -> ScreenInfo:
     """Detect screen resolution and scaling factor from Windows via PowerShell."""
     ps_script = """
-Add-Type @"
-using System;
-using System.Runtime.InteropServices;
-public class DisplayInfo {
-    [DllImport("user32.dll")]
-    public static extern int GetSystemMetrics(int nIndex);
-    [DllImport("gdi32.dll")]
-    public static extern int GetDeviceCaps(IntPtr hdc, int nIndex);
-    [DllImport("user32.dll")]
-    public static extern IntPtr GetDC(IntPtr hWnd);
-    [DllImport("user32.dll")]
-    public static extern int ReleaseDC(IntPtr hWnd, IntPtr hDC);
+Add-Type -AssemblyName System.Windows.Forms
+$screen = [System.Windows.Forms.Screen]::PrimaryScreen
+$physicalWidth = $screen.Bounds.Width
+$physicalHeight = $screen.Bounds.Height
+
+$videoController = Get-CimInstance Win32_VideoController | Select-Object -First 1
+$effectiveWidth = $videoController.CurrentHorizontalResolution
+$effectiveHeight = $videoController.CurrentVerticalResolution
+
+if ($effectiveWidth -and $effectiveWidth -gt 0) {
+    $scale = [math]::Round($physicalWidth / $effectiveWidth * 100)
+} else {
+    $scale = 100
 }
-"@
-$hdc = [DisplayInfo]::GetDC([IntPtr]::Zero)
-$dpiX = [DisplayInfo]::GetDeviceCaps($hdc, 88)
-[DisplayInfo]::ReleaseDC([IntPtr]::Zero, $hdc) | Out-Null
-$width = [DisplayInfo]::GetSystemMetrics(0)
-$height = [DisplayInfo]::GetSystemMetrics(1)
-$scale = [math]::Round($dpiX / 96 * 100)
-Write-Output $width
-Write-Output $height
+
+Write-Output $physicalWidth
+Write-Output $physicalHeight
 Write-Output $scale
 """
 
@@ -49,6 +44,8 @@ Write-Output $scale
         ["powershell.exe", "-NoProfile", "-Command", ps_script],
         capture_output=True,
         text=True,
+        encoding="utf-8",
+        errors="replace",
     )
 
     if result.returncode != 0:

@@ -1,7 +1,10 @@
 import argparse
 import asyncio
+from pathlib import Path
 
 from src import detect_screen_info, BrowserLauncher
+
+SCREENSHOT_DIR = Path(__file__).parent / "screenshots"
 
 
 async def run(url: str, screenshot_path: str | None, full_page: bool) -> None:
@@ -16,6 +19,8 @@ async def run(url: str, screenshot_path: str | None, full_page: bool) -> None:
         print(f"Navigated to: {url}")
 
         if screenshot_path:
+            path = Path(screenshot_path)
+            path.parent.mkdir(parents=True, exist_ok=True)
             await launcher.take_screenshot(page, screenshot_path, full_page=full_page)
             print(f"Screenshot saved: {screenshot_path}")
         else:
@@ -26,11 +31,16 @@ async def run(url: str, screenshot_path: str | None, full_page: bool) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="画面解像度を自動検出してChromiumブラウザを起動するツール",
-        epilog="日本語サイトで文字化けする場合: sudo apt install fonts-noto-cjk && fc-cache -fv",
+        epilog="日本語文字化け対策: READMEの「日本語フォントの設定」を参照",
     )
     parser.add_argument("url", help="アクセスするURL")
     parser.add_argument(
-        "-s", "--screenshot", metavar="PATH", help="スクリーンショットの保存先パス"
+        "-s",
+        "--screenshot",
+        metavar="PATH",
+        nargs="?",
+        const=str(SCREENSHOT_DIR / "screenshot.png"),
+        help=f"スクリーンショットの保存先パス (省略時: {SCREENSHOT_DIR}/screenshot.png)",
     )
     parser.add_argument(
         "-f", "--full-page", action="store_true", help="ページ全体のスクリーンショットを撮影"

@@ -30,8 +30,7 @@ class BrowserLauncher:
                 headless=self.headless,
                 args=[
                     "--lang=ja-JP,ja",
-                    "--disable-gpu-sandbox",
-                    "--font-render-hinting=none",
+                    "--no-sandbox",
                 ],
             )
             context = await browser.new_context(
