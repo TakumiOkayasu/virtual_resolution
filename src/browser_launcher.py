@@ -3,7 +3,7 @@ from typing import AsyncIterator
 
 from playwright.async_api import async_playwright, Page
 
-from screen_detector import ScreenInfo
+from .screen_detector import ScreenInfo
 
 
 class BrowserLauncher:
