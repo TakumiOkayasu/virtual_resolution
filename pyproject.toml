@@ -1,0 +1,18 @@
+[project]
+name = "virtual-resolution"
+version = "0.0.1"
+description = "Launch Chromium browser with auto-detected screen resolution"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "playwright>=1.40.0",
+]
+
+[project.scripts]
+virtual-resolution = "main:main"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.23.0",
+]
