@@ -26,11 +26,14 @@ class BrowserLauncher:
     @asynccontextmanager
     async def launch(self) -> AsyncIterator[Page]:
         async with async_playwright() as p:
+            viewport = self.get_viewport_size()
             browser = await p.chromium.launch(
                 headless=self.headless,
                 args=[
                     "--lang=ja-JP,ja",
                     "--no-sandbox",
+                    f"--window-size={viewport['width']},{viewport['height']}",
+                    "--disable-resize",
                 ],
             )
             context = await browser.new_context(
