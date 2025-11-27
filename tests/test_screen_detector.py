@@ -1,6 +1,6 @@
 import pytest
 from unittest.mock import patch, MagicMock
-from screen_detector import ScreenInfo, detect_screen_info
+from src import ScreenInfo, detect_screen_info
 
 
 class TestScreenInfo:

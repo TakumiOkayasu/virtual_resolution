@@ -1,7 +1,6 @@
 import pytest
 from unittest.mock import patch, MagicMock, AsyncMock
-from screen_detector import ScreenInfo
-from browser_launcher import BrowserLauncher
+from src import ScreenInfo, BrowserLauncher
 
 
 class TestBrowserLauncher:
@@ -42,7 +41,7 @@ class TestBrowserLauncherAsync:
         mock_playwright = AsyncMock()
         mock_playwright.chromium.launch = AsyncMock(return_value=mock_browser)
 
-        with patch("browser_launcher.async_playwright") as mock_async_pw:
+        with patch("src.browser_launcher.async_playwright") as mock_async_pw:
             mock_async_pw.return_value.__aenter__ = AsyncMock(
                 return_value=mock_playwright
             )
