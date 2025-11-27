@@ -26,8 +26,14 @@ class BrowserLauncher:
     @asynccontextmanager
     async def launch(self) -> AsyncIterator[Page]:
         async with async_playwright() as p:
-            browser = await p.chromium.launch(headless=self.headless)
-            context = await browser.new_context(viewport=self.get_viewport_size())
+            browser = await p.chromium.launch(
+                headless=self.headless,
+                args=["--lang=ja"],
+            )
+            context = await browser.new_context(
+                viewport=self.get_viewport_size(),
+                locale="ja-JP",
+            )
             page = await context.new_page()
             try:
                 yield page
