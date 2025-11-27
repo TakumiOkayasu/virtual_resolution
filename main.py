@@ -1,8 +1,7 @@
 import argparse
 import asyncio
 
-from screen_detector import detect_screen_info
-from browser_launcher import BrowserLauncher
+from src import detect_screen_info, BrowserLauncher
 
 
 async def run(url: str, screenshot_path: str | None, full_page: bool) -> None:
