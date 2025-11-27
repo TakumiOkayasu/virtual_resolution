@@ -25,7 +25,8 @@ async def run(url: str, screenshot_path: str | None, full_page: bool) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="画面解像度を自動検出してChromiumブラウザを起動するツール"
+        description="画面解像度を自動検出してChromiumブラウザを起動するツール",
+        epilog="日本語サイトで文字化けする場合: sudo apt install fonts-noto-cjk && fc-cache -fv",
     )
     parser.add_argument("url", help="アクセスするURL")
     parser.add_argument(

@@ -14,9 +14,15 @@ Windows の画面解像度とスケーリングを自動検出し、Playwright �
 - Python 3.12以上
 - WSL2 (Windows Subsystem for Linux)
 - Playwright の依存ライブラリ
+- 日本語フォント (日本語サイトを表示する場合)
 
 ```bash
+# Playwright 依存ライブラリ
 sudo apt-get install libnspr4 libnss3 libasound2t64
+
+# 日本語フォント (文字化け防止)
+sudo apt-get install fonts-noto-cjk
+fc-cache -fv
 ```
 
 ## インストール

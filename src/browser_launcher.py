@@ -28,7 +28,11 @@ class BrowserLauncher:
         async with async_playwright() as p:
             browser = await p.chromium.launch(
                 headless=self.headless,
-                args=["--lang=ja"],
+                args=[
+                    "--lang=ja-JP,ja",
+                    "--disable-gpu-sandbox",
+                    "--font-render-hinting=none",
+                ],
             )
             context = await browser.new_context(
                 viewport=self.get_viewport_size(),
