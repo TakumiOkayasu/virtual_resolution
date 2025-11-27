@@ -59,7 +59,12 @@ uv run playwright install chromium
 uv run python main.py https://example.com
 ```
 
-Enter キーを押すとブラウザが閉じます。
+インタラクティブモードでは以下のキー操作が可能です:
+
+| キー | 動作 |
+|------|------|
+| `P` | スクリーンショットを撮影 (screenshots/screenshot_YYYYMMDD_HHMMSS.png) |
+| `Q` / `Enter` | ブラウザを閉じて終了 |
 
 ### スクリーンショットを撮影
 

@@ -1,10 +1,46 @@
 import argparse
 import asyncio
+import sys
+import termios
+import tty
+from datetime import datetime
 from pathlib import Path
 
 from src import detect_screen_info, BrowserLauncher
 
 SCREENSHOT_DIR = Path(__file__).parent / "screenshots"
+
+
+def read_key() -> str:
+    """Read a single key from stdin without waiting for Enter."""
+    fd = sys.stdin.fileno()
+    old_settings = termios.tcgetattr(fd)
+    try:
+        tty.setraw(fd)
+        ch = sys.stdin.read(1)
+    finally:
+        termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+    return ch
+
+
+async def interactive_mode(launcher: BrowserLauncher, page, full_page: bool) -> None:
+    """Interactive mode: P for screenshot, Q/Enter to quit."""
+    print("Interactive mode: [P] Screenshot, [Q/Enter] Quit")
+    loop = asyncio.get_event_loop()
+
+    while True:
+        key = await loop.run_in_executor(None, read_key)
+        key_lower = key.lower()
+
+        if key_lower == "p":
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            filename = f"screenshot_{timestamp}.png"
+            path = SCREENSHOT_DIR / filename
+            path.parent.mkdir(parents=True, exist_ok=True)
+            await launcher.take_screenshot(page, str(path), full_page=full_page)
+            print(f"Screenshot saved: {path}")
+        elif key_lower == "q" or key in ("\r", "\n"):
+            break
 
 
 async def run(url: str, screenshot_path: str | None, full_page: bool) -> None:
@@ -24,14 +60,15 @@ async def run(url: str, screenshot_path: str | None, full_page: bool) -> None:
             await launcher.take_screenshot(page, screenshot_path, full_page=full_page)
             print(f"Screenshot saved: {screenshot_path}")
         else:
-            print("Press Enter to close browser...")
-            await asyncio.get_event_loop().run_in_executor(None, input)
+            await interactive_mode(launcher, page, full_page)
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="画面解像度を自動検出してChromiumブラウザを起動するツール",
-        epilog="日本語文字化け対策: READMEの「日本語フォントの設定」を参照",
+        epilog="インタラクティブモード: [P] スクリーンショット, [Q/Enter] 終了\n"
+        "日本語文字化け対策: READMEの「日本語フォントの設定」を参照",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser.add_argument("url", help="アクセスするURL")
     parser.add_argument(
