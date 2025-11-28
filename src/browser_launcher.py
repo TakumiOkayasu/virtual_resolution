@@ -39,6 +39,7 @@ class BrowserLauncher:
             context = await browser.new_context(
                 viewport=self.get_viewport_size(),
                 locale="ja-JP",
+                timezone_id="Asia/Tokyo",
             )
             page = await context.new_page()
             try:
