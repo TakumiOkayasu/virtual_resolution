@@ -30,7 +30,8 @@ class BrowserLauncher:
             browser = await p.chromium.launch(
                 headless=self.headless,
                 args=[
-                    "--lang=ja-JP,ja",
+                    "--lang=ja-JP",
+                    "--accept-lang=ja-JP,ja",
                     "--no-sandbox",
                     f"--window-size={viewport['width']},{viewport['height']}",
                     "--disable-resize",
@@ -40,7 +41,17 @@ class BrowserLauncher:
                 viewport=self.get_viewport_size(),
                 locale="ja-JP",
                 timezone_id="Asia/Tokyo",
+                extra_http_headers={
+                    "Accept-Language": "ja-JP,ja;q=0.9",
+                },
+                geolocation={"latitude": 35.6762, "longitude": 139.6503},
+                permissions=["geolocation"],
             )
+            # Override navigator.language and related properties
+            await context.add_init_script("""
+                Object.defineProperty(navigator, 'language', { get: () => 'ja-JP' });
+                Object.defineProperty(navigator, 'languages', { get: () => ['ja-JP', 'ja'] });
+            """)
             page = await context.new_page()
             try:
                 yield page
