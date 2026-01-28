@@ -1,9 +1,19 @@
 from contextlib import asynccontextmanager
 from typing import AsyncIterator
+from urllib.parse import urlparse, urlunparse
 
 from playwright.async_api import async_playwright, Page
 
 from .screen_detector import ScreenInfo
+
+
+def parse_basic_auth_url(url: str) -> tuple[str, dict[str, str] | None]:
+    parsed = urlparse(url)
+    if parsed.username and parsed.password:
+        creds = {"username": parsed.username, "password": parsed.password}
+        clean = parsed._replace(netloc=parsed.hostname + (f":{parsed.port}" if parsed.port else ""))
+        return urlunparse(clean), creds
+    return url, None
 
 
 class BrowserLauncher:
@@ -12,10 +22,12 @@ class BrowserLauncher:
         screen_info: ScreenInfo,
         viewport_offset: tuple[int, int] = (0, 0),
         headless: bool = False,
+        http_credentials: dict[str, str] | None = None,
     ):
         self.screen_info = screen_info
         self.viewport_offset = viewport_offset
         self.headless = headless
+        self.http_credentials = http_credentials
 
     def get_viewport_size(self) -> dict[str, int]:
         return {
@@ -37,16 +49,20 @@ class BrowserLauncher:
                     "--disable-resize",
                 ],
             )
-            context = await browser.new_context(
-                viewport=self.get_viewport_size(),
-                locale="ja-JP",
-                timezone_id="Asia/Tokyo",
-                extra_http_headers={
+            context_options: dict = {
+                "viewport": self.get_viewport_size(),
+                "locale": "ja-JP",
+                "timezone_id": "Asia/Tokyo",
+                "extra_http_headers": {
                     "Accept-Language": "ja-JP,ja;q=0.9",
                 },
-                geolocation={"latitude": 35.6762, "longitude": 139.6503},
-                permissions=["geolocation"],
-            )
+                "geolocation": {"latitude": 35.6762, "longitude": 139.6503},
+                "permissions": ["geolocation"],
+                "ignore_https_errors": True,
+            }
+            if self.http_credentials:
+                context_options["http_credentials"] = self.http_credentials
+            context = await browser.new_context(**context_options)
             # Override navigator.language and related properties
             await context.add_init_script("""
                 Object.defineProperty(navigator, 'language', { get: () => 'ja-JP' });

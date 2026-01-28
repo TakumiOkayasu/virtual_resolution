@@ -7,6 +7,7 @@ from datetime import datetime
 from pathlib import Path
 
 from src import detect_screen_info, BrowserLauncher
+from src.browser_launcher import parse_basic_auth_url
 
 SCREENSHOT_DIR = Path(__file__).parent / "screenshots"
 
@@ -43,12 +44,26 @@ async def interactive_mode(launcher: BrowserLauncher, page, full_page: bool) -> 
             break
 
 
-async def run(url: str, screenshot_path: str | None, full_page: bool) -> None:
+async def run(
+    url: str,
+    screenshot_path: str | None,
+    full_page: bool,
+    user: str | None = None,
+    password: str | None = None,
+) -> None:
     screen = detect_screen_info()
     print(f"Detected: {screen.width}x{screen.height} @ {screen.scale_factor * 100:.0f}%")
     print(f"Effective: {screen.effective_width}x{screen.effective_height}")
 
-    launcher = BrowserLauncher(screen)
+    url, url_creds = parse_basic_auth_url(url)
+    if user and password:
+        http_credentials = {"username": user, "password": password}
+    elif url_creds:
+        http_credentials = url_creds
+    else:
+        http_credentials = None
+
+    launcher = BrowserLauncher(screen, http_credentials=http_credentials)
 
     async with launcher.launch() as page:
         await launcher.navigate(page, url)
@@ -82,9 +97,11 @@ def main() -> None:
     parser.add_argument(
         "-f", "--full-page", action="store_true", help="ページ全体のスクリーンショットを撮影"
     )
+    parser.add_argument("--user", help="Basic認証ユーザー名")
+    parser.add_argument("--password", help="Basic認証パスワード")
 
     args = parser.parse_args()
-    asyncio.run(run(args.url, args.screenshot, args.full_page))
+    asyncio.run(run(args.url, args.screenshot, args.full_page, args.user, args.password))
 
 
 if __name__ == "__main__":
