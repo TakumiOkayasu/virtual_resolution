@@ -10,8 +10,17 @@ class TestBrowserLauncher:
         launcher = BrowserLauncher(screen)
         assert launcher.screen_info == screen
 
-    def test_viewport_size_uses_effective_resolution(self):
+    def test_viewport_size_returns_fullhd(self):
+        """Viewport is always FullHD regardless of screen info."""
         screen = ScreenInfo(width=3840, height=2160, scale_factor=2.0)
+        launcher = BrowserLauncher(screen)
+        viewport = launcher.get_viewport_size()
+        assert viewport["width"] == 1920
+        assert viewport["height"] == 1080
+
+    def test_viewport_size_returns_fullhd_for_any_screen(self):
+        """Viewport is FullHD even with different screen resolutions."""
+        screen = ScreenInfo(width=2560, height=1440, scale_factor=1.5)
         launcher = BrowserLauncher(screen)
         viewport = launcher.get_viewport_size()
         assert viewport["width"] == 1920
@@ -21,7 +30,7 @@ class TestBrowserLauncher:
         screen = ScreenInfo(width=3840, height=2160, scale_factor=2.0)
         launcher = BrowserLauncher(screen, viewport_offset=(0, 100))
         viewport = launcher.get_viewport_size()
-        # height reduced by taskbar offset
+        # FullHD with height reduced by offset
         assert viewport["width"] == 1920
         assert viewport["height"] == 980
 

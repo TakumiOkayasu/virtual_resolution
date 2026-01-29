@@ -9,6 +9,7 @@ from pathlib import Path
 from src import detect_screen_info, BrowserLauncher
 from src.browser_launcher import parse_basic_auth_url
 
+__version__ = "1.0.0"
 SCREENSHOT_DIR = Path(__file__).parent / "screenshots"
 
 
@@ -81,13 +82,52 @@ async def run(
 
 
 def main() -> None:
+    epilog = """\
+使用例:
+  %(prog)s https://example.com/
+      指定URLをブラウザで開く（インタラクティブモード）
+
+  %(prog)s https://example.com/ -s
+      スクリーンショットを撮影して終了（デフォルト: screenshots/screenshot.png）
+
+  %(prog)s https://example.com/ -s /path/to/image.png -f
+      ページ全体のスクリーンショットを指定パスに保存
+
+  %(prog)s "http://user:pass@example.com/"
+      Basic認証が必要なサイトにアクセス（URL埋め込み形式）
+
+  %(prog)s https://example.com/ --user admin --password secret
+      Basic認証が必要なサイトにアクセス（CLI引数形式）
+
+  %(prog)s https://example.com/ --chrome
+      Chromiumの代わりにGoogle Chromeを使用
+
+インタラクティブモード:
+  [P] スクリーンショットを撮影（タイムスタンプ付きファイル名で保存）
+  [Q] または [Enter] で終了
+
+注意事項:
+  - 日本語文字化け対策: READMEの「日本語フォントの設定」を参照
+  - Chromeを使用するには事前に `playwright install chrome` が必要
+"""
     parser = argparse.ArgumentParser(
-        description="画面解像度を自動検出してブラウザを起動するツール",
-        epilog="インタラクティブモード: [P] スクリーンショット, [Q/Enter] 終了\n"
-        "日本語文字化け対策: READMEの「日本語フォントの設定」を参照",
+        prog="virtual-resolution",
+        description="WSL2環境からWindowsの画面解像度とDPIスケーリングを自動検出し、"
+        "PlaywrightでブラウザをFullHD (1920x1080) で起動する自動化ツール",
+        epilog=epilog,
         formatter_class=argparse.RawDescriptionHelpFormatter,
+        add_help=False,
     )
-    parser.add_argument("url", help="アクセスするURL")
+    # グループ名を日本語化
+    parser._positionals.title = "必須引数"
+    parser._optionals.title = "オプション"
+
+    parser.add_argument("-h", "--help", action="help", help="このヘルプメッセージを表示して終了")
+    parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}", help="バージョン情報を表示して終了")
+    parser.add_argument(
+        "url",
+        help="アクセスするURL（例: https://example.com/, http://user:pass@example.com/）",
+    )
     parser.add_argument(
         "-s",
         "--screenshot",
