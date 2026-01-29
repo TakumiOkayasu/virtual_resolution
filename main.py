@@ -50,6 +50,7 @@ async def run(
     full_page: bool,
     user: str | None = None,
     password: str | None = None,
+    use_chrome: bool = False,
 ) -> None:
     screen = detect_screen_info()
     print(f"Detected: {screen.width}x{screen.height} @ {screen.scale_factor * 100:.0f}%")
@@ -63,7 +64,8 @@ async def run(
     else:
         http_credentials = None
 
-    launcher = BrowserLauncher(screen, http_credentials=http_credentials)
+    browser_channel = "chrome" if use_chrome else None
+    launcher = BrowserLauncher(screen, http_credentials=http_credentials, browser_channel=browser_channel)
 
     async with launcher.launch() as page:
         await launcher.navigate(page, url)
@@ -80,7 +82,7 @@ async def run(
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="画面解像度を自動検出してChromiumブラウザを起動するツール",
+        description="画面解像度を自動検出してブラウザを起動するツール",
         epilog="インタラクティブモード: [P] スクリーンショット, [Q/Enter] 終了\n"
         "日本語文字化け対策: READMEの「日本語フォントの設定」を参照",
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -99,9 +101,12 @@ def main() -> None:
     )
     parser.add_argument("--user", help="Basic認証ユーザー名")
     parser.add_argument("--password", help="Basic認証パスワード")
+    parser.add_argument(
+        "--chrome", action="store_true", help="Google Chromeを使用 (デフォルト: Chromium)"
+    )
 
     args = parser.parse_args()
-    asyncio.run(run(args.url, args.screenshot, args.full_page, args.user, args.password))
+    asyncio.run(run(args.url, args.screenshot, args.full_page, args.user, args.password, args.chrome))
 
 
 if __name__ == "__main__":

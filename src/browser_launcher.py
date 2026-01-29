@@ -23,11 +23,13 @@ class BrowserLauncher:
         viewport_offset: tuple[int, int] = (0, 0),
         headless: bool = False,
         http_credentials: dict[str, str] | None = None,
+        browser_channel: str | None = None,
     ):
         self.screen_info = screen_info
         self.viewport_offset = viewport_offset
         self.headless = headless
         self.http_credentials = http_credentials
+        self.browser_channel = browser_channel
 
     def get_viewport_size(self) -> dict[str, int]:
         return {
@@ -39,16 +41,18 @@ class BrowserLauncher:
     async def launch(self) -> AsyncIterator[Page]:
         async with async_playwright() as p:
             viewport = self.get_viewport_size()
-            browser = await p.chromium.launch(
-                headless=self.headless,
-                args=[
+            launch_options: dict = {
+                "headless": self.headless,
+                "args": [
                     "--lang=ja-JP",
                     "--accept-lang=ja-JP,ja",
                     "--no-sandbox",
                     f"--window-size={viewport['width']},{viewport['height']}",
-                    "--disable-resize",
                 ],
-            )
+            }
+            if self.browser_channel:
+                launch_options["channel"] = self.browser_channel
+            browser = await p.chromium.launch(**launch_options)
             context_options: dict = {
                 "viewport": self.get_viewport_size(),
                 "locale": "ja-JP",
@@ -63,10 +67,18 @@ class BrowserLauncher:
             if self.http_credentials:
                 context_options["http_credentials"] = self.http_credentials
             context = await browser.new_context(**context_options)
-            # Override navigator.language and related properties
-            await context.add_init_script("""
-                Object.defineProperty(navigator, 'language', { get: () => 'ja-JP' });
-                Object.defineProperty(navigator, 'languages', { get: () => ['ja-JP', 'ja'] });
+            await context.add_init_script(f"""
+                Object.defineProperty(navigator, 'language', {{ get: () => 'ja-JP' }});
+                Object.defineProperty(navigator, 'languages', {{ get: () => ['ja-JP', 'ja'] }});
+
+                // Resize prevention
+                const _targetWidth = {viewport['width']};
+                const _targetHeight = {viewport['height']};
+                window.addEventListener('resize', () => {{
+                    if (window.innerWidth !== _targetWidth || window.innerHeight !== _targetHeight) {{
+                        window.resizeTo(_targetWidth, _targetHeight);
+                    }}
+                }});
             """)
             page = await context.new_page()
             try:

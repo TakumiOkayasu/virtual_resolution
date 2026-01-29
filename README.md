@@ -6,6 +6,8 @@ Windows の画面解像度とスケーリングを自動検出し、Playwright �
 
 - Windows の画面解像度とDPIスケーリングを自動検出
 - 実効解像度 (物理解像度 / スケーリング倍率) でブラウザを起動
+- Chromium / Google Chrome 選択可能
+- ウィンドウリサイズ自動防止
 - スクリーンショット撮影
 - Web操作の自動化基盤
 
@@ -49,6 +51,9 @@ fc-cache -fv
 ```bash
 uv sync
 uv run playwright install chromium
+
+# Google Chrome を使用する場合
+uv run playwright install chrome
 ```
 
 ## 使い方
@@ -56,7 +61,11 @@ uv run playwright install chromium
 ### ブラウザを起動してインタラクティブに操作
 
 ```bash
+# Chromium (デフォルト)
 uv run python main.py https://example.com
+
+# Google Chrome
+uv run python main.py https://example.com --chrome
 ```
 
 インタラクティブモードでは以下のキー操作が可能です:
@@ -84,6 +93,7 @@ uv run python main.py https://example.com -s examples/full.png -f
 |-----------|------|
 | `-s`, `--screenshot PATH` | スクリーンショットの保存先パス |
 | `-f`, `--full-page` | ページ全体のスクリーンショットを撮影 |
+| `--chrome` | Google Chrome を使用 (デフォルト: Chromium) |
 
 ## 動作例
 
@@ -97,3 +107,7 @@ Screenshot saved: examples/screenshot.png
 ```
 
 ブラウザは実効解像度 (1920x1080) で起動します。
+
+## 備考
+
+- ウィンドウサイズを変更しても自動的に元のサイズに戻ります
