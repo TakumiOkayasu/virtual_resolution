@@ -113,7 +113,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(
         prog="virtual-resolution",
         description="WSL2環境からWindowsの画面解像度とDPIスケーリングを自動検出し、"
-        "Playwrightでブラウザを適切なサイズで起動する自動化ツール",
+        "PlaywrightでブラウザをFullHD (1920x1080) で起動する自動化ツール",
         epilog=epilog,
         formatter_class=argparse.RawDescriptionHelpFormatter,
         add_help=False,

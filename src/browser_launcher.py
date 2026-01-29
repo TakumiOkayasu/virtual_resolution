@@ -32,9 +32,10 @@ class BrowserLauncher:
         self.browser_channel = browser_channel
 
     def get_viewport_size(self) -> dict[str, int]:
+        """Always return FullHD (1920x1080) viewport."""
         return {
-            "width": self.screen_info.effective_width - self.viewport_offset[0],
-            "height": self.screen_info.effective_height - self.viewport_offset[1],
+            "width": 1920 - self.viewport_offset[0],
+            "height": 1080 - self.viewport_offset[1],
         }
 
     @asynccontextmanager
