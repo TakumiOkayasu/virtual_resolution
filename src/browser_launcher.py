@@ -97,11 +97,11 @@ class BrowserLauncher:
         await page.goto(url)
 
     async def setup_key_capture(self, page: Page) -> None:
-        """ブラウザ内キーキャプチャを設定 (Ctrl+PrintScreen, Escape)"""
+        """ブラウザ内キーキャプチャを設定 (F9, Escape)"""
         await page.evaluate("""
             window.__keyEvents = [];
             document.addEventListener('keydown', (e) => {
-                if (e.code === 'PrintScreen' && e.ctrlKey && !e.altKey && !e.shiftKey) {
+                if (e.code === 'F9') {
                     e.preventDefault();
                     window.__keyEvents.push('screenshot');
                 } else if (e.code === 'Escape') {
