@@ -3,6 +3,8 @@ import asyncio
 from datetime import datetime
 from pathlib import Path
 
+from playwright._impl._errors import Error as PlaywrightError
+
 from src import detect_screen_info, BrowserLauncher
 from src.browser_launcher import parse_basic_auth_url
 
@@ -20,7 +22,7 @@ async def interactive_mode(launcher: BrowserLauncher, page, full_page: bool) -> 
     while True:
         try:
             events = await launcher.poll_key_events(page)
-        except Exception:
+        except PlaywrightError:
             # ナビゲーションでコンテキスト破棄時は再設定
             await launcher.setup_key_capture(page)
             continue
