@@ -18,7 +18,13 @@ async def interactive_mode(launcher: BrowserLauncher, page, full_page: bool) -> 
     await launcher.setup_key_capture(page)
 
     while True:
-        events = await launcher.poll_key_events(page)
+        try:
+            events = await launcher.poll_key_events(page)
+        except Exception:
+            # ナビゲーションでコンテキスト破棄時は再設定
+            await launcher.setup_key_capture(page)
+            continue
+
         for event in events:
             if event == "screenshot":
                 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
