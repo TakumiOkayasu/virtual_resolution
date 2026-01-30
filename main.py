@@ -11,8 +11,8 @@ SCREENSHOT_DIR = Path(__file__).parent / "screenshots"
 
 
 async def interactive_mode(launcher: BrowserLauncher, page, full_page: bool) -> None:
-    """Interactive mode: Ctrl+PrintScreen for screenshot, Escape to quit."""
-    print("Interactive mode: [Ctrl+PrintScreen] Screenshot, [Escape] Quit")
+    """Interactive mode: F9 for screenshot, Escape to quit."""
+    print("Interactive mode: [F9] Screenshot, [Escape] Quit")
     print("(ブラウザウィンドウをアクティブにしてください)")
 
     await launcher.setup_key_capture(page)
@@ -96,7 +96,7 @@ def main() -> None:
       Chromiumの代わりにGoogle Chromeを使用
 
 インタラクティブモード:
-  [Ctrl+PrintScreen] スクリーンショットを撮影（タイムスタンプ付きファイル名で保存）
+  [F9] スクリーンショットを撮影（タイムスタンプ付きファイル名で保存）
   [Escape] で終了
   ※ ブラウザウィンドウがアクティブな状態で操作してください
 
