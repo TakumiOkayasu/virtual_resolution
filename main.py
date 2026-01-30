@@ -1,8 +1,5 @@
 import argparse
 import asyncio
-import sys
-import termios
-import tty
 from datetime import datetime
 from pathlib import Path
 
@@ -13,36 +10,26 @@ __version__ = "1.0.0"
 SCREENSHOT_DIR = Path(__file__).parent / "screenshots"
 
 
-def read_key() -> str:
-    """Read a single key from stdin without waiting for Enter."""
-    fd = sys.stdin.fileno()
-    old_settings = termios.tcgetattr(fd)
-    try:
-        tty.setraw(fd)
-        ch = sys.stdin.read(1)
-    finally:
-        termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
-    return ch
-
-
 async def interactive_mode(launcher: BrowserLauncher, page, full_page: bool) -> None:
-    """Interactive mode: P for screenshot, Q/Enter to quit."""
-    print("Interactive mode: [P] Screenshot, [Q/Enter] Quit")
-    loop = asyncio.get_event_loop()
+    """Interactive mode: Ctrl+PrintScreen for screenshot, Escape to quit."""
+    print("Interactive mode: [Ctrl+PrintScreen] Screenshot, [Escape] Quit")
+    print("(ブラウザウィンドウをアクティブにしてください)")
+
+    await launcher.setup_key_capture(page)
 
     while True:
-        key = await loop.run_in_executor(None, read_key)
-        key_lower = key.lower()
-
-        if key_lower == "p":
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            filename = f"screenshot_{timestamp}.png"
-            path = SCREENSHOT_DIR / filename
-            path.parent.mkdir(parents=True, exist_ok=True)
-            await launcher.take_screenshot(page, str(path), full_page=full_page)
-            print(f"Screenshot saved: {path}")
-        elif key_lower == "q" or key in ("\r", "\n"):
-            break
+        events = await launcher.poll_key_events(page)
+        for event in events:
+            if event == "screenshot":
+                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                filename = f"screenshot_{timestamp}.png"
+                path = SCREENSHOT_DIR / filename
+                path.parent.mkdir(parents=True, exist_ok=True)
+                await launcher.take_screenshot(page, str(path), full_page=full_page)
+                print(f"Screenshot saved: {path}")
+            elif event == "quit":
+                return
+        await asyncio.sleep(0.1)
 
 
 async def run(
@@ -103,8 +90,9 @@ def main() -> None:
       Chromiumの代わりにGoogle Chromeを使用
 
 インタラクティブモード:
-  [P] スクリーンショットを撮影（タイムスタンプ付きファイル名で保存）
-  [Q] または [Enter] で終了
+  [Ctrl+PrintScreen] スクリーンショットを撮影（タイムスタンプ付きファイル名で保存）
+  [Escape] で終了
+  ※ ブラウザウィンドウがアクティブな状態で操作してください
 
 注意事項:
   - 日本語文字化け対策: READMEの「日本語フォントの設定」を参照

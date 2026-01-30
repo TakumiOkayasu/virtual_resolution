@@ -95,3 +95,27 @@ class BrowserLauncher:
 
     async def navigate(self, page: Page, url: str) -> None:
         await page.goto(url)
+
+    async def setup_key_capture(self, page: Page) -> None:
+        """ブラウザ内キーキャプチャを設定 (Ctrl+PrintScreen, Escape)"""
+        await page.evaluate("""
+            window.__keyEvents = [];
+            document.addEventListener('keydown', (e) => {
+                if (e.code === 'PrintScreen' && e.ctrlKey && !e.altKey && !e.shiftKey) {
+                    e.preventDefault();
+                    window.__keyEvents.push('screenshot');
+                } else if (e.code === 'Escape') {
+                    e.preventDefault();
+                    window.__keyEvents.push('quit');
+                }
+            });
+        """)
+
+    async def poll_key_events(self, page: Page) -> list[str]:
+        """キーイベントを取得してクリア"""
+        events = await page.evaluate("""
+            const events = window.__keyEvents || [];
+            window.__keyEvents = [];
+            events;
+        """)
+        return events
