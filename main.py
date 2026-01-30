@@ -3,7 +3,7 @@ import asyncio
 from datetime import datetime
 from pathlib import Path
 
-from playwright._impl._errors import Error as PlaywrightError
+from playwright.async_api import Error as PlaywrightError
 
 from src import detect_screen_info, BrowserLauncher
 from src.browser_launcher import parse_basic_auth_url
