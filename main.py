@@ -3,7 +3,7 @@ import asyncio
 from datetime import datetime
 from pathlib import Path
 
-from playwright.async_api import Error as PlaywrightError
+from playwright.async_api import Error as PlaywrightError, Page
 
 from src import detect_screen_info, BrowserLauncher
 from src.browser_launcher import parse_basic_auth_url
@@ -12,7 +12,7 @@ __version__ = "1.0.0"
 SCREENSHOT_DIR = Path(__file__).parent / "screenshots"
 
 
-async def interactive_mode(launcher: BrowserLauncher, page, full_page: bool) -> None:
+async def interactive_mode(launcher: BrowserLauncher, page: Page, full_page: bool) -> None:
     """Interactive mode: F9 for screenshot, Escape to quit."""
     print("Interactive mode: [F9] Screenshot, [Escape] Quit")
     print("(ブラウザウィンドウをアクティブにしてください)")
